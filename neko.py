@@ -20,6 +20,16 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 async def on_ready():
     print("Cat Bot is online!")
 
+@bot.command()
+async def ping(ctx):
+    ''' 
+    It shows Ping
+    ''' 
+    # Get the latency of the bot 
+    latency = bot.latency  # Included in the Discord.py library 
+    # Send it to the user 
+    await ctx.send(f"Pong! {latency:.2f}ms")
+
 @bot.event
 async def on_message(message):
     if message.author.bot:
