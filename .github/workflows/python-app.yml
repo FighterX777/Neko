@@ -28,6 +28,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install discord
         pip install neko
+        pip install requests
     - name: Test with pytest
       run: |
         python neko.py
