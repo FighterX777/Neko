@@ -1,2 +1,2 @@
 FROM python:3.11
-CMD ["bash", "cloud.sh"]
+CMD ["bash", "Neko/cloud.sh"]
