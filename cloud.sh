@@ -1,1 +1,1 @@
-gunicorn app:app --daemon && python main.py
+gunicorn main:main --daemon && python app.py
