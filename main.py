@@ -43,6 +43,7 @@ play_next_song = asyncio.Event()
 
 # Update ytdl_format_options
 ytdl_format_options = {
+    'verbose': True,
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
