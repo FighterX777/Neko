@@ -43,7 +43,6 @@ play_next_song = asyncio.Event()
 
 # Update ytdl_format_options
 ytdl_format_options = {
-    'verbose': True,
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
@@ -58,6 +57,7 @@ ytdl_format_options = {
     'force-ipv4': True,
     'preferredcodec': 'mp3',
     'buffersize': 64*1024,  # Increase buffer size
+    'cookiefile': 'youtube.com_cookies.txt',  # Add this line
 }
 # Update ffmpeg_options
 ffmpeg_options = {
@@ -141,7 +141,13 @@ async def play_next(guild):
 
     await play_next(guild)
 
-# Update play command
+# Add this function before the play command
+async def get_video_info(url):
+    loop = asyncio.get_event_loop()
+    data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=False))
+    return data
+
+# Update the play command
 @bot.tree.command(name="play", description="Play music from a YouTube URL or search term")
 @app_commands.describe(query="The YouTube URL or search term")
 async def play(interaction: discord.Interaction, query: str):
@@ -171,6 +177,11 @@ async def play(interaction: discord.Interaction, query: str):
             url = f"https://www.youtube.com/watch?v={results['result'][0]['id']}"
         else:
             url = query
+
+        video_data = await get_video_info(url)
+        if video_data is None:
+            await interaction.followup.send("Failed to retrieve video information.")
+            return
 
         player = await YTDLSource.from_url(url, loop=bot.loop, stream=True)
         await songs.put((player, interaction.channel))
