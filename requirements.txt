@@ -2,3 +2,6 @@ discord
 gdown
 gunicorn
 flask
+ffmpeg-python
+yt_dlp
+youtube-search-python
