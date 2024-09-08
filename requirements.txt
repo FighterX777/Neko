@@ -6,3 +6,4 @@ ffmpeg-python
 yt_dlp
 youtube-search-python
 async-timeout
+PyNaCl
