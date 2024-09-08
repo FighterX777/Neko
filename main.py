@@ -67,7 +67,7 @@ ffmpeg_options = {
 ytdl = yt_dlp.YoutubeDL(ytdl_format_options)
 
 
-logging.basicConfig(level=logging.DEBUG)  # Change to DEBUG for more detailed logs
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Define the YTDLSource class
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -153,22 +153,23 @@ async def get_video_info(url):
 async def play(interaction: discord.Interaction, query: str):
     await interaction.response.defer(thinking=True)
     
-    # Check if the user is in a voice channel
-    if not interaction.user.voice:
-        await interaction.followup.send("You need to be in a voice channel to use this command.")
-        return
-
-    # Check if the bot has permission to join and speak in the voice channel
-    permissions = interaction.user.voice.channel.permissions_for(interaction.guild.me)
-    if not permissions.connect or not permissions.speak:
-        await interaction.followup.send("I don't have permission to join or speak in your voice channel.")
-        return
-
-    # Join the user's voice channel if not already in one
-    if not interaction.guild.voice_client:
-        await interaction.user.voice.channel.connect()
-
     try:
+        # Check if the user is in a voice channel
+        if not interaction.user.voice:
+            await interaction.followup.send("You need to be in a voice channel to use this command.")
+            return
+
+        # Check if the bot has permission to join and speak in the voice channel
+        permissions = interaction.user.voice.channel.permissions_for(interaction.guild.me)
+        if not permissions.connect or not permissions.speak:
+            await interaction.followup.send("I don't have permission to join or speak in your voice channel.")
+            return
+
+        # Join the user's voice channel if not already in one
+        if not interaction.guild.voice_client:
+            await interaction.user.voice.channel.connect()
+
+        # Process the query
         if not query.startswith('http'):
             results = VideosSearch(query, limit=1).result()
             if not results['result']:
@@ -178,6 +179,7 @@ async def play(interaction: discord.Interaction, query: str):
         else:
             url = query
 
+        # Get video info and create player
         video_data = await get_video_info(url)
         if video_data is None:
             await interaction.followup.send("Failed to retrieve video information.")
@@ -186,14 +188,16 @@ async def play(interaction: discord.Interaction, query: str):
         player = await YTDLSource.from_url(url, loop=bot.loop, stream=True)
         await songs.put((player, interaction.channel))
 
+        # Play or queue the song
         if not interaction.guild.voice_client or not interaction.guild.voice_client.is_playing():
             await play_next(interaction.guild)
             await interaction.followup.send(f'Now playing: {player.title}')
         else:
             await interaction.followup.send(f'Added to queue: {player.title}')
+
     except Exception as e:
-        logging.error(f"Error in play command: {e}")
-        await interaction.followup.send(f"An error occurred: {str(e)}")
+        logging.error(f"Error in play command: {e}", exc_info=True)
+        await interaction.followup.send(f"An error occurred while processing your request. Please try again later.")
 
 # ... (keep the rest of your code)
 
